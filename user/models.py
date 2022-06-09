@@ -6,7 +6,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     email = models.CharField(
-        max_length=12,
+        max_length=50,
         validators=[
             EmailValidator(
                 message="Please enter a valid mail address",
@@ -15,7 +15,7 @@ class Profile(models.Model):
         ],
     )
     phone = models.CharField(max_length=20)
-
+    
 
 # not sure it right to have the addresses 
 # in two separete tables
@@ -27,6 +27,7 @@ class BillingAddress(models.Model):
     street = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     postal_code = models.PositiveIntegerField()
+    
 
 # composite attribute
 class ShippingAddress(models.Model):
@@ -34,5 +35,5 @@ class ShippingAddress(models.Model):
     street = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
     postal_code = models.PositiveIntegerField()
-
+   
     

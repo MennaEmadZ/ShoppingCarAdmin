@@ -6,12 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sale', '0002_alter_saleitem_quantity'),
+        ('purchase', '0002_alter_purchaseitem_quantity'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='saleitem',
+            model_name='purchaseitem',
             name='quantity',
             field=models.IntegerField(default=0),
         ),
