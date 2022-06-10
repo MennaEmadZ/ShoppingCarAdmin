@@ -1,8 +1,10 @@
 from django.contrib import admin
 from sale.models import Sale, SaleItem
-from django.db.models import F
+from django.db.models import F,  DecimalField, ExpressionWrapper
+from django.db.models import Sum
 class SaleAdmin(admin.ModelAdmin):
     # a list of readonly columns name.
+    
     list_display = ['user', 'calculated_total']
     readonly_fields = ('date',)
 
@@ -10,12 +12,12 @@ class SaleAdmin(admin.ModelAdmin):
 
     def calculated_total(self, obj):
         #to handle multiple querysets
-        sum=0
-        total = SaleItem.objects.filter(sale_id=obj.id).annotate(total=F('product__price') * F('quantity'))
-        for val in total:
-            sum+=val.total
-        return sum
+        queryset = SaleItem.objects.filter(sale_id=obj.id).annotate(total=ExpressionWrapper(F('product__price')*F('quantity'), output_field=DecimalField()))
+        total = queryset.aggregate(Sum('total'))
         
+        return '$%.2f ' %  total['total__sum'] 
+
+
 
 class SaleItemAdmin(admin.ModelAdmin):
     # a list of displayed columns name.
