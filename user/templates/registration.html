@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{%block title%}
+        Registration
+{%endblock%}
+
+{% block content %}
+
+<!--Register--> 
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="py-2">Registeration</h2>
+            <form class="pl-4" method="POST">
+                {% csrf_token %}
+                {% if messages %}
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {{ register_form.as_p }}
+                {{ profile_form.as_p }}
+                <h5 class="text-muted py-3">Billing Address:</h5>
+                <div class="px-3">
+                    {{ billing_form.as_p }}
+                </div>
+
+                <h5 class="text-muted py-3">Shipping Address:</h5>
+
+                <div class="px-3">
+                    {{ shipping_form.as_p }}
+                </div>
+                <button class="btn btn-primary mt-3" type="submit">Register</button>
+            </form>
+            <p class="text-center">If you already have an account, <a href="/login">login</a> instead.</p>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
