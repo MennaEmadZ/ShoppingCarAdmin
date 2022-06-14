@@ -17,7 +17,7 @@ class BillingAddress(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, to_field='id')
     street = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
-    postal_code = models.PositiveIntegerField(max_length=8)
+    postal_code = models.CharField(max_length=10)
     
 
 # composite attribute
@@ -25,4 +25,4 @@ class ShippingAddress(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, to_field='id')
     street = models.CharField(max_length=50)
     city = models.CharField(max_length=50)
-    postal_code = models.PositiveIntegerField(max_length=8)
+    postal_code = models.CharField(max_length=10)

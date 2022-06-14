@@ -6,10 +6,10 @@ from .models import Profile, BillingAddress, ShippingAddress
 
 
 class RegistrationForm(UserCreationForm):
-	first_name = forms.CharField(label="First name", widget=forms.TextInput(attrs={"placeholder": "FIRST NAME"}))
-	last_name = forms.CharField(label="Last name", widget=forms.TextInput(attrs={"placeholder": "LAST NAME"}))
-	username = forms.CharField(label="Username", widget=forms.TextInput(attrs={"placeholder": "USERNAME"}))
-	email = forms.EmailField(label="Email", widget=forms.TextInput(attrs={"placeholder": "EMAIL ADDRESS"}))
+	first_name = forms.CharField(label="First name", widget=forms.TextInput())
+	last_name = forms.CharField(label="Last name", widget=forms.TextInput())
+	username = forms.CharField(label="Username", widget=forms.TextInput())
+	email = forms.EmailField(label="Email", widget=forms.TextInput())
 
 	class Meta:
 		model = User
