@@ -19,4 +19,4 @@ class PurchaseItem(models.Model):
     quantity = models.IntegerField()
    
     def __str__(self):
-        return f"{self.id}-{self.product}"
+        return f"{self.id}-{self.product}-{self.purchase}"

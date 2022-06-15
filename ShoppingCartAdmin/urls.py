@@ -22,7 +22,7 @@ from user import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user.urls')),
-    path('', views.login_request),
+    path('', views.view_products),  # home page
 ]
 
 if settings.DEBUG:  

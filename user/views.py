@@ -3,8 +3,11 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.contrib import messages
-from .forms import RegistrationForm, BillingAddressForm, ShippingAddressForm, ProfileForm
+from django.core.paginator import Paginator  # import Paginator
 
+from product.models import Product, ProductImage
+from sale.models import Sale, SaleItem
+from .forms import RegistrationForm, BillingAddressForm, ShippingAddressForm, ProfileForm
 # Create your views here.
 
 
@@ -71,3 +74,40 @@ def login_request(request):
 def logout_view(request):
 	logout(request)
 	return render(request, 'logout.html')
+
+
+def view_products(request):
+	if request.method == "GET":
+		products = Product.objects.all().order_by('name')
+
+		context = {'products_list': []}
+
+		for product in products:
+			product_details = dict()
+			product_details['product_info'] = product
+
+			image = ProductImage.objects.filter(product=product.id).first()
+			product_details['product_images'] = image
+
+			context["products_list"].append(product_details)
+
+		paginator = Paginator(context["products_list"], 24)
+
+		page_number = request.GET.get('page')
+		page_obj = paginator.get_page(page_number)
+		context["products_list"] = page_obj
+		return render(request, "home.html", context)
+
+
+def add_to_cart(request):
+
+	if not request.user.is_authenticated:
+		current_user = request.user.id
+		context = {'current_user': current_user}
+		return render(request, "home.html", context)
+
+	if request.method == "POST":
+		data = request.POST.get("add_cart")
+		order = Sale.objects.create(user=request.user.id)
+		order_item = SaleItem.objects.create(sale=order.id, product_id=data, quantity=1)
+
