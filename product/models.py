@@ -18,7 +18,7 @@ class Product(models.Model):
         purchase = self.purchaseitem_set.all().aggregate(Sum('quantity'))["quantity__sum"]
         sale = self.saleitem_set.all().aggregate(Sum('quantity'))["quantity__sum"]
         # no purchase ans sale yet
-        if not purchase and not sale:
+        if not purchase:
             return 0
         # there is a stock but no sale yet  
         elif not sale:
@@ -31,7 +31,7 @@ class Product(models.Model):
 # multivalued attribute
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, to_field='id')
-    image = models.ImageField()
+    image = models.ImageField(default='default.png')
 
     def __str__(self):
         return f"{self.product}"

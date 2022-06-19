@@ -10,26 +10,45 @@
         <div class="col-12">
             <h1 > Welcome to home page </h1>
         </div>
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
     </div>
     <div class="row">
+    {% if not products_list %}
+           <div class="col-3 justify-content-center text-center  my-4">
+           <h1>there is no product yet</h1>
+           </div>
+    {% else %}
         {% for product in products_list %}
-        <div class="col-3 justify-content-center text-center  my-4">
-          <div class="card h-100 ">
+            <div class="col-3 justify-content-center text-center  my-4">
+              <div class="card h-100 ">
 
-            <img src="{{  product.product_images.image.url }}" class="card-img-top" alt="{{ product.product_info.name}}" style="width: auto; height: 350px; object-fit: contain;">
-            <br>
-            <h4  > {{ product.product_info.name}}</h4>
-            <p class="text-muted">{{ product.product_info.price}}</p>
-              {% if current_user %}
-                  <form method="post">
-                  <button name="add_cart" value="{{ product.product_info.id }}" class="btn btn-success" type="submit">Add to Cart</button>
-                  </form>
-              {% endif %}
-              <a class="btn btn-secondary" href="#">Details</a>
-          </div>
-        </div>
+                <img src="{{  product.product_images.image.url }}" class="card-img-top" alt="{{ product.product_info.name}}" style="width: auto; height: 350px; object-fit: contain;">
+                <br>
+                <h4  > {{ product.product_info.name}}</h4>
+                <p class="text-muted">{{ product.product_info.price}}</p>
+
+
+                  {% if  session_user and  product.stock_count != 'Out of stock' %}
+
+                      <p class="text-muted">Only {{ product.stock_count}} left</p>
+                       <a href="{% url 'add-to-cart' product.product_info.id  %}" class=" btn btn-success"> <i class="bi bi-cart"></i> Add to cart</a>
+                  {% elif  session_user and product.stock_count == 'Out of stock' %}
+                       <p class="invisible">nothing</p>
+                       <a class="  btn btn-secondary disabled">Out of stock</a>
+
+                  {% endif %}
+                 <br>
+                  <a class=" btn btn-secondary" href="{% url 'detail' product.product_info.id %}">View Details</a>
+              </div>
+            </div>
         {% endfor %}
-
+    {% endif %}
     </div>
     </div>
   <!--Pagination-->

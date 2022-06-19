@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{%block title%}
+       Product Details
+{%endblock%}
+
+{% block content %}
+<div class="container my-5 pb-5">
+    <div class="row">
+     {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+          <div class="col-6">
+                      {% for image in product_images %}
+                      <div class="primary-image">
+                          {% if forloop.first %}
+                          <img class="m-1" src="{{ image.image.url }}" width="400px" alt="{{ product_info.name }}">
+                          {% else %}
+                                <img class="m-1" src="{{ image.image.url }}" width="100px" alt="{{ product_info.name }}">
+                          {% endif %}
+
+                      </div>
+                      {% endfor %}
+                  </div>
+
+        <div class="col-4">
+            <h4>{{ product_info.name }}</h4>
+            <p>{{ product_info.description }} </p>
+            <div class="m-bot15"> <strong>Price : </strong> <span>{{ product_info.price }}</span> </div>
+            {% if  stock_count == 'Out of stock'  %}
+                  <div class=" my-3"> <strong>Out of stock </strong> </div>
+
+            {% elif not session_user %}
+               <div class=" my-3"> <strong>To purchase, You have to <a href="/user/login"> login</a> in first  </strong> </div>
+            {% else %}
+                <div class=""> <strong>items left : </strong> <span>{{ stock_count }}</span> </div>
+                 <form class="my-3" method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <button class=" my-3 btn btn-round btn-success" type="submit"><i class="bi bi-cart "></i> Add to Cart</button>
+
+                </form>
+            {% endif %}
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}

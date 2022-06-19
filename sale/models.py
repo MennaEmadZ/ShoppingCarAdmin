@@ -9,6 +9,7 @@ from user.models import User
 class Sale(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, to_field='id')
     date = models.DateField(default=timezone.now)
+    checkout = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.id}"

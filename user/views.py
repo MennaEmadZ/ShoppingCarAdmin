@@ -1,13 +1,18 @@
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.shortcuts import render
+from django.db.models import Sum
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator  # import Paginator
 
+from product.views import stock_count, cart_helper
 from product.models import Product, ProductImage
 from sale.models import Sale, SaleItem
 from .forms import RegistrationForm, BillingAddressForm, ShippingAddressForm, ProfileForm
+
+
+
 # Create your views here.
 
 
@@ -39,7 +44,7 @@ def register_request(request):
 
 			login(request, user)
 			messages.success(request, "Registration successful.")
-			return render(request, "home.html")
+			return redirect(view_products)
 
 		messages.error(request, "Unsuccessful registration. Invalid information.")
 
@@ -62,7 +67,16 @@ def login_request(request):
 			if user is not None:
 				login(request, user)
 				messages.info(request, f"You are now logged in as {username}.")
-				return render(request, "home.html")
+
+				cart = Sale.objects.get(user_id=user.id, checkout=False)
+
+				if not cart:
+					request.session["item_total"] = 0
+				else:
+					total_items = SaleItem.objects.filter(sale=cart).aggregate(Sum('quantity'))["quantity__sum"]
+					request.session["item_total"] = total_items
+				return redirect(view_products)
+
 			else:
 				messages.error(request, "Invalid username or password.")
 		else:
@@ -77,37 +91,38 @@ def logout_view(request):
 
 
 def view_products(request):
-	if request.method == "GET":
-		products = Product.objects.all().order_by('name')
+	context = {'products_list': [], 'current_user': ''}
+	products = Product.objects.all().order_by('name')
 
-		context = {'products_list': []}
+	for product in products:
+		product_details = dict()
+		# product info
+		product_details['product_info'] = product
+		# product image
+		image = ProductImage.objects.filter(product=product.id).first()
+		product_details['product_images'] = image
+		# stock count
+		product_details["stock_count"] = stock_count(product.id)
 
-		for product in products:
-			product_details = dict()
-			product_details['product_info'] = product
+		context["products_list"].append(product_details)
 
-			image = ProductImage.objects.filter(product=product.id).first()
-			product_details['product_images'] = image
+	paginator = Paginator(context["products_list"], 24)
 
-			context["products_list"].append(product_details)
+	page_number = request.GET.get('page')
+	page_obj = paginator.get_page(page_number)
+	context["products_list"] = page_obj
 
-		paginator = Paginator(context["products_list"], 24)
+	# if logged in view 'add to cart' button
+	if request.user.is_authenticated:
+		session_user = request.user.id
+		context['session_user'] = session_user
 
-		page_number = request.GET.get('page')
-		page_obj = paginator.get_page(page_number)
-		context["products_list"] = page_obj
-		return render(request, "home.html", context)
+	return render(request, "home.html", context)
 
 
-def add_to_cart(request):
+def add_to_cart(request, product):
+	cart_helper(user=request.user.id, product=product, quantity=1)
+	messages.info(request, f"Item added to the cart.")
+	request.session["item_total"] += 1
 
-	if not request.user.is_authenticated:
-		current_user = request.user.id
-		context = {'current_user': current_user}
-		return render(request, "home.html", context)
-
-	if request.method == "POST":
-		data = request.POST.get("add_cart")
-		order = Sale.objects.create(user=request.user.id)
-		order_item = SaleItem.objects.create(sale=order.id, product_id=data, quantity=1)
-
+	return redirect(view_products)
