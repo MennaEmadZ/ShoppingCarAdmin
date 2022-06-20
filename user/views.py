@@ -6,12 +6,11 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator  # import Paginator
 
+from product.forms import Quantity
 from product.views import stock_count, cart_helper
 from product.models import Product, ProductImage
 from sale.models import Sale, SaleItem
 from .forms import RegistrationForm, BillingAddressForm, ShippingAddressForm, ProfileForm
-
-
 
 # Create your views here.
 
@@ -68,13 +67,13 @@ def login_request(request):
 				login(request, user)
 				messages.info(request, f"You are now logged in as {username}.")
 
-				cart = Sale.objects.get(user_id=user.id, checkout=False)
-
+				cart = Sale.objects.filter(user_id=user.id, checkout=False).first()
 				if not cart:
 					request.session["item_total"] = 0
 				else:
-					total_items = SaleItem.objects.filter(sale=cart).aggregate(Sum('quantity'))["quantity__sum"]
-					request.session["item_total"] = total_items
+					total_items = SaleItem.objects.filter(sale=cart).aggregate(Sum('quantity'))
+					request.session["item_total"] = total_items["quantity__sum"]
+
 				return redirect(view_products)
 
 			else:
@@ -126,3 +125,65 @@ def add_to_cart(request, product):
 	request.session["item_total"] += 1
 
 	return redirect(view_products)
+
+
+def cart_view(request):
+	context = {'product': []}
+	i = 0
+	session_user = request.user.id
+	cart = Sale.objects.get(user_id=session_user, checkout=False)
+	cart_items = SaleItem.objects.filter(sale=cart)
+
+	for item in cart_items:
+		product_details = dict()
+		product = Product.objects.get(id=item.product_id)
+		product_image = ProductImage.objects.filter(product=item.product_id).first()
+		i += 1
+		product_details['no'] = i
+		product_details['id'] = product.id
+		product_details['name'] = product.name
+		product_details['price'] = product.price
+		product_details['image'] = product_image
+		product_details['quantity'] = item.quantity
+
+		form = Quantity(initial={'quantity': product_details['quantity']})
+		product_details['form'] = form
+
+		context['product'].append(product_details)
+	# update button
+	if request.method == "POST":
+		form = Quantity(request.POST)
+		if form.is_valid():
+			new_quantity = form.cleaned_data.get('quantity')
+			product_id = request.POST.get("product_token")
+			cart = Sale.objects.get(user_id=session_user, checkout=False)
+			cart_item = SaleItem.objects.get(sale=cart, product=product_id)
+
+			# if new quantity equals 0 remove it from SaleItem
+			if new_quantity == 0:
+				cart_item.delete()
+				messages.info(request, f"Item removed from your cart successfully.")
+				return redirect(cart_view)
+			# stock suffecient and new quantity not equal 0
+			elif new_quantity < stock_count(product_id):
+				request.session["item_total"] -= cart_item.quantity
+				cart_item.quantity = new_quantity
+				cart_item.save()
+				request.session["item_total"] += new_quantity
+				messages.info(request, f"Item quantity updates successfully.")
+				return redirect(cart_view)
+			else:
+				messages.info(request, f"Invalid quantity.")
+
+	return render(request, "cart.html", context)
+
+
+
+def checkout(request):
+	session_user = request.user.id
+	cart = Sale.objects.get(user_id=session_user, checkout=False)
+	cart.checkout = True
+	cart.save()
+	request.session["item_total"] = 0
+
+	return render(request, "checkout.html", context={'user': request.user.first_name})

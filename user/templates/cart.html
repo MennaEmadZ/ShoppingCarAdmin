@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{%block title%}
+       Cart Details
+{%endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+         {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Product</th>
+                  <th scope="col">Product Name</th>
+                  <th scope="col">Price/Piece</th>
+                  <th scope="col">Update</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for item in product %}
+                  <tr>
+                  <th scope="row">{{ item.no }}</th>
+                  <td>   <img class="m-1" src="{{ item.image.image.url }}" width="100px" alt="{{ item.name }}"></td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.price }}</td>
+                  <td>
+
+                     <form class="" method="post">
+                              {% csrf_token %}
+                                {{ item.form.as_p }}
+                            <input type="hidden" name="product_token" value="{{ item.id}}">
+                             <button class="btn btn-round btn-success" type=submit>
+                                 Update
+                                </button>
+
+                     </form>
+                  </td>
+
+
+                </tr>
+              {% endfor %}
+
+
+
+              </tbody>
+            </table>
+        <div class="row">
+            <div class="my-5 col-6">
+                 <a href="{% url 'checkout' %}" class="btn btn-round btn-danger">Checkout</a>
+            </div>
+        </div>
+        </div>
+    </div>
+
+{% endblock %}

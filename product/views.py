@@ -23,8 +23,15 @@ def stock_count(product):
 # helper function
 def cart_helper(user, product, quantity):
     order, created = Sale.objects.get_or_create(user_id=user, checkout=False)
-    order_item = SaleItem(sale=order, product_id=product, quantity=quantity)
-    order_item.save()
+
+    old_item = SaleItem.objects.filter(sale=order, product_id=product).first()
+    if old_item:
+        old_quantity = old_item.quantity
+        old_item.quantity = old_quantity + quantity
+        old_item.save()
+    else:
+        order_item = SaleItem(sale=order, product_id=product, quantity=quantity)
+        order_item.save()
 
 
 # Create your views here.
@@ -51,6 +58,7 @@ def product_details(request, product_id):
             else:
                 messages.info(request, f"Invalid item quantity.")
     else:
-        form = Quantity()
+        form = Quantity(initial={'quantity': 1})
+
     context['form'] = form
     return render(request, "product_details.html", context)

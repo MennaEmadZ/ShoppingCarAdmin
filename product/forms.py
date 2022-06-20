@@ -5,4 +5,4 @@ from product.models import Product
 
 
 class Quantity(forms.Form):
-    quantity = forms.IntegerField(initial=1)
+    quantity = forms.IntegerField()
