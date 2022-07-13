@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'user',
     'djmoney',
     'crispy_forms',
-    
+    'django_extensions',
     
 ]
 
